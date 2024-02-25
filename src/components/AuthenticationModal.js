@@ -9,48 +9,97 @@ import {
   Dimensions,
   Pressable,
   ActivityIndicator,
+  Alert
 } from "react-native";
 import AuthContext from "../features/authContext";
-import Logo from "../../assets/logo.png";
-import { loginWithEmailAndPassword, registerWithEmailAndPassword } from "../features/firebase/userAuth";
 
+import {
+  loginWithEmailAndPassword,
+  registerWithEmailAndPassword,
+  loginUserWithPhoneNumber,
+  confirmOTP, // Import the function for OTP verification
+} from "../features/firebase/userAuth"; // Import the function for phone number authentication
 
 const AuthenticationModal = ({ modalVisible, setModalVisible }) => {
   const [type, setType] = useState("login");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("test@test.com");
-  const [password, setPassword] = useState("123456");
-  const [loading,setLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(""); // Add state for phone number
+  const [verificationId, setVerificationId] = useState(""); // Add state for verification ID
+  const [otp, setOtp] = useState(""); // Add state for OTP
+  const [loading, setLoading] = useState(false);
 
   const { currentUser, setCurrentUser, isLoggedIn, setIsLoggedIn } =
     useContext(AuthContext);
 
-  const handleLogin = async() => {
-    setLoading(true)
-    const res= await loginWithEmailAndPassword(email,password)
-    if(res.success===true){
-      console.log("res",res)
-      setCurrentUser(res.user)
+ const handleLogin = async () => {
+   setLoading(true);
+   try {
+     const res = await loginWithEmailAndPassword(email, password);
+     console.log("Login response:", res);
+     setCurrentUser(res.user);
+     setModalVisible(false);
+     setIsLoggedIn(true);
+   } catch (error) {
+     console.error("Login error:", error.message);
+     Alert.alert("Login Failed", "Incorrect email or password.");
+   }
+   setLoading(false);
+ };
+
+  const handleRegister = async () => {
+    setLoading(true);
+    const res = await registerWithEmailAndPassword(name, email, password);
+    if (res.success === true) {
+      setCurrentUser({ name, email });
       setModalVisible(false);
-      setIsLoggedIn(true)
-      setLoading(false)
+      setIsLoggedIn(true);
     }
-    setModalVisible(false);
+    setLoading(false);
   };
-  
 
-  const handleRegister = async() => {
-      setLoading(true)
-      const res = await registerWithEmailAndPassword(name,email,password)
-      if(res.success===true){
-        setCurrentUser({name,email})
-        setModalVisible(false);
-        setIsLoggedIn(true)
-        setLoading(false)
+  const handlePhoneLogin = async () => {
+    setLoading(true);
+    try {
+      // Check if email is provided
+      if (!email) {
+        // Email not provided, proceed with phone number login without email
+        const verificationId = await loginUserWithPhoneNumber(phoneNumber);
+        setVerificationId(verificationId);
+      } else {
+        // Email provided, proceed with phone number login including email
+        const verificationId = await loginUserWithPhoneNumber(
+          phoneNumber,
+          email
+        );
+        setVerificationId(verificationId);
       }
-      setLoading(false)
+    } catch (error) {
+      console.error("Phone login error:", error);
+      // Handle error
+    }
+    setLoading(false);
   };
 
+
+  const handleOTPVerification = async () => {
+    setLoading(true);
+    try {
+      const res = await confirmOTP(verificationId, otp);
+      if (res.success === true) {
+        setCurrentUser(res.user);
+        setModalVisible(false);
+        setIsLoggedIn(true);
+      } else {
+        // Handle OTP verification failure
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      // Handle error
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -59,104 +108,123 @@ const AuthenticationModal = ({ modalVisible, setModalVisible }) => {
   }, [currentUser]);
 
   return (
-    <View style={{ flex: 1, width: 1150, backgroundColor: "red" }}>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
-      >
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => {
+        setModalVisible(false);
+      }}
+    >
+      <View style={styles.overlay}>
         {type === "login" ? (
-          <Pressable onPress={()=>setModalVisible(false)} className="flex-1 justify-center items-center bg-black/[0.5]">
-            <View className={`w-[80%] p-6 bg-white rounded-lg z-10`}>
-              <Text className="font-bold mb-2">Email:</Text>
-              <TextInput
-                className="border border-slate-300 px-3 py-2"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-              />
-              <Text className="font-bold mt-4 mb-2">Password:</Text>
-              <TextInput
-                className="border border-slate-300 px-3 py-2"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={true}
-              />
-
-              <TouchableOpacity
-                className="bg-black py-4 mt-6 rounded-lg"
-                onPress={handleLogin}
-              >
-                <Text className="text-white font-semibold text-center">
-                  Login
-                </Text>
-              </TouchableOpacity>
-              <View className="flex-row justify-center items-center mt-4">
-                <Text className="text-slate-500">Not a User?</Text>
-                <Pressable onPress={() => setType("register")}>
-                  <Text className="font-bold"> Register</Text>
-                </Pressable>
-              </View>
-              {loading
-                &&
-                <ActivityIndicator />
-              }
-              
-            </View>
-          </Pressable>
-        ) : (
-          <Pressable onPress={()=>setModalVisible(false)} className="flex-1 justify-center items-center bg-black/[0.5]">
-            <View className={`w-[80%] p-6 bg-white`}>
-              <Text className="font-bold mb-2">Name:</Text>
-              <TextInput
-                className="border border-slate-300 px-3 py-2"
-                value={name}
-                onChangeText={setName}
-              />
-              <Text className="font-bold mb-2">Email:</Text>
-              <TextInput
-                className="border border-slate-300 px-3 py-2"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-              />
-              <Text className="font-bold mb-2">Password:</Text>
-              <TextInput
-                className="border border-slate-300 px-3 py-2"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={true}
-              />
-
-              <TouchableOpacity
-                className="bg-black py-4 mt-6 rounded-lg"
-                onPress={handleRegister}
-              >
-                <Text className="text-white font-semibold text-center">
+          <View style={styles.modalContent}>
+            <Text style={styles.label}>Email:</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+            <Text style={styles.label}>Password:</Text>
+            <TextInput
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={true}
+            />
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: "#000" }]}
+              onPress={handleLogin}
+            >
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+            <View style={styles.switch}>
+              <Text style={styles.switchText}>Not a User?</Text>
+              <Pressable onPress={() => setType("register")}>
+                <Text style={[styles.switchText, { fontWeight: "bold" }]}>
+                  {" "}
                   Register
                 </Text>
-              </TouchableOpacity>
-
-              <View className="flex-row justify-center items-center mt-4">
-                <Text className="text-slate-500">Already a User?</Text>
-                <Pressable onPress={() => setType("login")}>
-                  <Text className="font-bold"> Login</Text>
-                </Pressable>
-              </View>
-              {/* {loading
-              ?
-              <ActivityIndicator size={"large"} />
-                :
-              }
-              {error && <Text style={{color:"red"}}>{error}</Text>} */}
+              </Pressable>
             </View>
-          </Pressable>
+            {loading && <ActivityIndicator />}
+          </View>
+        ) : (
+          <View style={styles.modalContent}>
+            <Text style={styles.label}>Name:</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
+            <Text style={styles.label}>Email:</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+            <Text style={styles.label}>Password:</Text>
+            <TextInput
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={true}
+            />
+            {/* Render phone number input only for phone login */}
+            {type === "phone" && (
+              <>
+                <Text style={styles.label}>Phone Number:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  keyboardType="phone-pad"
+                />
+              </>
+            )}
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: "#000" }]}
+              onPress={
+                type === "phone" ? handlePhoneLogin : handleRegister // Use phone login handler if type is phone
+              }
+            >
+              <Text style={styles.buttonText}>
+                {type === "phone" ? "Login with Phone" : "Register"}
+              </Text>
+            </TouchableOpacity>
+            {/* Render OTP input only if verificationId exists */}
+            {verificationId && (
+              <>
+                <Text style={styles.label}>Enter OTP:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={otp}
+                  onChangeText={setOtp}
+                />
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: "#000" }]}
+                  onPress={handleOTPVerification}
+                >
+                  <Text style={styles.buttonText}>Verify OTP</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            <View style={styles.switch}>
+              <Text style={styles.switchText}>Already a User?</Text>
+              <Pressable onPress={() => setType("login")}>
+                <Text style={[styles.switchText, { fontWeight: "bold" }]}>
+                  {" "}
+                  Login
+                </Text>
+              </Pressable>
+            </View>
+            {loading && <ActivityIndicator />}
+          </View>
         )}
-      </Modal>
-    </View>
+      </View>
+    </Modal>
   );
 };
 
@@ -167,21 +235,41 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  loginButton: {
-    backgroundColor: "#0080ff",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
+  modalContent: {
+    width: Dimensions.get("window").width * 0.8,
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
   },
-  closeButton: {
-    backgroundColor: "#ccc",
-    padding: 10,
+  label: {
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 5,
-    marginTop: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  button: {
+    borderRadius: 5,
+    padding: 15,
+    marginBottom: 10,
+    alignItems: "center",
   },
   buttonText: {
     color: "#fff",
-    textAlign: "center",
+    fontWeight: "bold",
+  },
+  switch: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  switchText: {
+    color: "#666",
   },
 });
 

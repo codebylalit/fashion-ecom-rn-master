@@ -7,6 +7,7 @@ import { AuthProvider } from "./src/features/authContext";
 import { ProductProvider } from "./src/features/productContext";
 import { CartProvider } from "./src/features/cartContext";
 import { OrderProvider } from "./src/features/orderContext";
+import  "react-native-tailwindcss";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

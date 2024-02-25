@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "ecom-v2",
-    "slug": "ecom-v2",
+    "name": "Lucky-Fashion",
+    "slug": "Lucky-Fashion",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Logo.jpg",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/Logo.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,13 +18,20 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/Logo.jpg",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lalit_namdev.ecomv2"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/Logo.jpg"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "24b2f004-899e-4beb-8295-49fb149f11d3"
+      }
     }
   }
 }

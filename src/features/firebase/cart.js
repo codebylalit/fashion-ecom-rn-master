@@ -35,16 +35,29 @@ export const addToCart=async(itemId,qty)=>{
     }
 }
 
-export const removeItemById = async(id) => {
-        const userDocRef = doc(db,"users",auth.currentUser.uid);
-        const userDocSnapshot = await getDoc(userDocRef);
-        if(userDocSnapshot.exists()){
-            const userData = userDocSnapshot.data();
-            const newCart = userData.cart.filter((item)=>item.id!==id);
-            await updateDoc(userDocRef,{cart:newCart})
-            const subTotal = newCart.reduce((acc,curr)=> acc+Number(curr.price))
-            return {data:newCart,success:true,subTotal}
-        }else{
-            console.log("user doesn't exists")
-        }
+export const removeItemById = async (id) => {
+  try {
+    const userDocRef = doc(db, "users", auth.currentUser.uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (!userDocSnapshot.exists()) {
+      console.error("User document does not exist");
+      return { success: false, error: "User document does not exist" };
     }
+
+    const userData = userDocSnapshot.data();
+    const cartItems = userData.cart || [];
+
+    // Filter out the item with the provided ID
+    const newCart = cartItems.filter((item) => item.id !== id);
+
+    // Update the user's cart in Firestore
+    await updateDoc(userDocRef, { cart: newCart });
+
+    return { success: true, data: newCart };
+  } catch (error) {
+    console.error("Error removing item:", error);
+    return { success: false, error: error.message };
+  }
+};
+

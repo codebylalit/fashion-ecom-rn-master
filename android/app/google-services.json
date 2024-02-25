@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "725701763080",
+    "project_id": "lucky-fashion-90fa1",
+    "storage_bucket": "lucky-fashion-90fa1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725701763080:android:577954a0906f252bb1f1bd",
+        "android_client_info": {
+          "package_name": "com.lalit_namdev.ecomv2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "725701763080-ko4itnvb5pctkdqqun85tcpakmvjqehp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLji7s3wm8wM2RVjWGl8y0IUdbdJID_hg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "725701763080-ko4itnvb5pctkdqqun85tcpakmvjqehp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

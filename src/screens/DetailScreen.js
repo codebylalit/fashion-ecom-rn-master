@@ -1,116 +1,203 @@
-import { Text, View, Pressable, Image,ToastAndroid } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { getProductById } from "../features/firebase/product";
-import ProductContext from "../features/productContext";
-import { ScrollView } from "react-native-gesture-handler";
-import { addToCart } from "../features/firebase/cart";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useContext, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import CartContext from "../features/cartContext";
+import Swiper from "react-native-swiper";
 
-// const sizes = ["S", "M", "L", "XL", "XXL"];
+const ProductDetailScreen = ({ route }) => {
+  const { product } = route.params;
+  const { addToCart } = useContext(CartContext);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState("Medium");
 
-const DetailScreen = ({navigation,route}) => {
-  const {currentProduct:product,setCurrentProduct}= useContext(ProductContext);
-  const {setCartItems}=useContext(CartContext) 
-  const id=route.params.productId;
+  const handleIncrement = () => {
+    setQuantity((prevQuantity) => prevQuantity + 1);
+  };
 
-  const [qty,setQty]=useState(1);
-
-  const increment =()=>{
-    setQty(prev=>prev+1)
-  }
-  const decrement =()=>{
-    if(qty>1){
-      setQty(prev=>prev-1)
+  const handleDecrement = () => {
+    if (quantity > 1) {
+      setQuantity((prevQuantity) => prevQuantity - 1);
     }
-  }
+  };
 
-  const goBack =() => {
-    navigation.goBack()
-  }
+  const handleAddToCart = () => {
+    const productWithDetails = {
+      ...product,
+      quantity: quantity,
+      size: selectedSize,
+      totalPrice: product.price * quantity,
+    };
 
-  const addItemToCart = async() => {
-    const res = await addToCart(id,qty)
-    if(res.success===true){
-      ToastAndroid.show("item added to cart",ToastAndroid.BOTTOM)
-      setCartItems(res.data)
-    }
-  }
-
-  const fetchProductById =async(id) =>{
-    const result = await getProductById(id)
-    setCurrentProduct(result)
-  }
-
-  useEffect(()=>{
-    fetchProductById(id)
-  },[id])
+    addToCart(productWithDetails);
+  };
 
   return (
-    <SafeAreaView className="h-full bg-white">
-      <View className=" bg-black w-full">
-        <Pressable onPress={goBack} className="mt-2 absolute z-10 top-4 justify-center items-center
-         h-10 w-10 mx-4 rounded-full bg-black">
-          <MaterialIcons name="chevron-left" size={34} color={"#fff"} />
-        </Pressable>
-          <Image source={{uri:product?.image}} style={{resizeMode:"cover"}} className=" h-[470]" />
+    <ScrollView style={styles.container}>
+      <View style={styles.imageContainer}>
+        {product && product.images && product.images.length > 0 ? (
+          <Swiper style={styles.wrapper} loop={false} height={350}>
+            {product.images.map((image, index) => (
+              <View key={index} style={styles.slide}>
+                <Image source={{ uri: image }} style={styles.image} />
+              </View>
+            ))}
+          </Swiper>
+        ) : (
+          <Text>No image available</Text>
+        )}
       </View>
 
-      <View className="rounded-[30px]  bg-white mt-[-20px] p-5">
-        <View>
-        <View className="flex-row justify-between">
-            <View>
-                <Text className="font-extrabold text-lg">{product?.title}</Text>
-                <Text className="text-xs text-gray-500">{product?.brand}</Text>
+      {product && (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.name}>{product.name || product.title}</Text>
+          <Text style={styles.price}>₹{product.price}</Text>
+          <Text style={styles.description}>{product.description}</Text>
+
+          <View style={styles.selectionContainer}>
+            <Text style={styles.selectionLabel}>Quantity:</Text>
+            <View style={styles.quantityControl}>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={handleDecrement}
+              >
+                <Text style={{ color: "black" }}>-</Text>
+              </TouchableOpacity>
+              <Text>{quantity}</Text>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={handleIncrement}
+              >
+                <Text>+</Text>
+              </TouchableOpacity>
             </View>
-            <View>
-                <View className="flex-row justify-center items-center">
-                <Pressable className="px-3 py-1 bg-gray-300 border border-gray-300 rounded-tl-lg
-                 rounded-bl-lg" onPress={decrement}>
-                    <Text className="font-semibold">-</Text>
-                </Pressable>
-                <Text className="bg-white px-2 py-1 border border-gray-300"  >{qty}</Text>
-                <Pressable className="px-3 py-1 bg-gray-300 border border-gray-300 rounded-tr-lg rounded-br-lg" onPress={increment}>
-                    <Text>+</Text>
-                </Pressable>
-                </View>
-            </View>
-        </View>
-        {/* <View className="mt-6">
-          <Text className="font-extrabold mb-3">Size</Text>
-          <View className="flex-row justify-evenly">
-          {sizes.map((size) => (
-            <View className="justify-center items-center rounded-full w-10 h-10 bg-white border border-gray-300">
-                <Text>{size}</Text>
-            </View>
-          ))}
           </View>
-        </View> */}
-        <View className="mt-6">
-          <Text className="font-extrabold mb-3">Description</Text>
-          <ScrollView className="h-36">
-          <Text className="text-gray-500 text-xs">
-            {product?.description}
-          </Text>
-          </ScrollView>
+
+          <View style={styles.sizeVariantBlock}>
+            <Text style={styles.selectionLabel}>Size:</Text>
+            <View style={styles.sizeSwatches}>
+              {["XS", "S", "M", "L", "XL"].map((size) => (
+                <TouchableOpacity
+                  key={size}
+                  style={[
+                    styles.circle,
+                    selectedSize === size && styles.selectedCircle,
+                  ]}
+                  onPress={() => setSelectedSize(size)}
+                >
+                  <Text style={styles.sizeLabel}>{size}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={handleAddToCart}
+          >
+            <Text style={styles.buttonText}>Add to Bag</Text>
+          </TouchableOpacity>
         </View>
-        </View>
-      </View>
-    <View className="absolute bottom-4 left-0 w-full px-4">
-      <View className="flex-row justify-between items-center mt-8">
-        <View >
-          <Text className="text-gray-500 mb-[-4px]">Total Price</Text>
-          <Text className="font-bold text-lg">${product?.price}</Text>
-        </View>
-        <Pressable onPress={addItemToCart} className="items-center bg-black px-6 py-3 rounded-3xl" >
-          <Text className="text-white font-semibold">Add to Cart</Text>
-        </Pressable>
-      </View>
-      </View>
-    </SafeAreaView>
+      )}
+    </ScrollView>
   );
 };
 
-export default DetailScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  imageContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 10, // Add border radius
+  },
+  detailsContainer: {
+    paddingHorizontal: 20,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+  },
+  price: {
+    fontSize: 20,
+    color: "#FF9057",
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 18,
+    marginBottom: 20,
+    color: "#666",
+  },
+  selectionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  selectionLabel: {
+    fontSize: 18,
+    marginRight: 10,
+    color: "#333",
+  },
+  quantityControl: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  quantityButton: {
+    backgroundColor: "#EAEAEA",
+    padding: 5,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  sizeVariantBlock: {
+    marginBottom: 20,
+  },
+  sizeSwatches: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    flexWrap: "wrap",
+  },
+  circle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#333",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  sizeLabel: {
+    fontSize: 15,
+    color: "#333",
+  },
+  selectedCircle: {
+    backgroundColor: "#FF9057",
+  },
+  buttonContainer: {
+    backgroundColor: "#FF9057",
+    paddingVertical: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  buttonText: {
+    fontSize: 18,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+  },
+});
 
+export default ProductDetailScreen;

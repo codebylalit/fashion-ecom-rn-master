@@ -1,8 +1,14 @@
-import { Text, View, Image, ScrollView, Pressable } from "react-native";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  Text,
+  View,
+  Image,
+  ScrollView,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import UserLogo from "../../assets/user.png";
 import OfferCard from "../components/OfferCard";
 import NewArrivalsCard from "../components/NewArrivalsCard";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,92 +16,286 @@ import AuthenticationModal from "../components/AuthenticationModal";
 import AuthContext from "../features/authContext";
 import ProductContext from "../features/productContext";
 import { getProducts } from "../features/firebase/product";
+import "react-native-tailwindcss";
+import { StyleSheet } from "react-native";
+import CategoryCard from "../Categories/CategoryCard";
+import SearchHandler from "../components/SearchHandler";
 
 const Home = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const { isLoggedIn,currentUser} = useContext(AuthContext);
-  const {products,setProducts} = useContext(ProductContext);
+  const { isLoggedIn, currentUser } = useContext(AuthContext);
+  const { products, setProducts } = useContext(ProductContext);
+  const [showAddIcon, setShowAddIcon] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+
+  const handleMenuPress = () => {
+    setShowAddIcon((prev) => !prev);
+  };
 
   const fetchAllProducts = async () => {
-    const result = await getProducts()
-    setProducts(result)
-  }
+    const result = await getProducts();
+    setProducts(result);
+  };
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
 
-    fetchAllProducts()
+    fetchAllProducts();
   }, []);
+
+   const handleAddProduct = (product) => {
+     // Extract the necessary data from the product object
+     const { id, name, price, description, images } = product;
+
+     // Navigate to the addproductscreen and pass only the necessary data
+     navigation.navigate("addproductscreen", {
+       productId: id,
+       productName: name,
+       productPrice: price,
+       productDescription: description,
+       productImages: images,
+     });
+   };
+
+
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#e6e6fa" }}>
       <ScrollView>
-        <View className="flex-row px-5 mt-6 justify-between items-center">
-          <View className="bg-black rounded-full w-10 h-10 justify-center items-center">
-            <MaterialIcons name="menu" size={24} color={"#fff"} />
-          </View>
-          {!isLoggedIn &&(
-            <Pressable onPress={() => setModalVisible(!modalVisible)} className="flex-row items-center justify-center border border-slate-400 rounded-full ">
-              <Image
-                source={UserLogo}
+        <View
+          style={{
+            flexDirection: "row",
+            paddingHorizontal: 20,
+            marginTop: 15,
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View style={{ flexDirection: "row" }}>
+            <TouchableOpacity onPress={handleAddProduct}>
+              {showAddIcon && (
+                <MaterialIcons name="add-circle" size={25} color="black" />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleMenuPress}>
+              <View
                 style={{
-                  height: 40,
-                  width: 40,
-                  backgroundColor: "#aaaaaa",
-                  borderRadius: 50,
+                  backgroundColor: "black",
+                  borderRadius: 20,
+                  width: 30,
+                  height: 30,
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
-                />
-                <Text className="font-semibold py-2 pr-4 pl-2">Login</Text>
+              >
+                <MaterialIcons name="mood" size={25} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
+            <Text
+              style={{
+                color: "black",
+                fontWeight: "bold",
+                fontSize: 20,
+                fontFamily: "sans-serif",
+                marginLeft: 2,
+              }}
+            >
+              Lucky Fashions
+            </Text>
+          </View>
+          {!isLoggedIn ? (
+            <Pressable
+              onPress={() => setModalVisible(!modalVisible)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 1,
+                borderColor: "black",
+                borderRadius: 50,
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+              }}
+            >
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  borderRadius: 20,
+                  color: "black",
+                  height: 22,
+                  width: 55,
+                }}
+              >
+                Login
+              </Text>
             </Pressable>
+          ) : (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text
+                style={{
+                  justifyContent: "center",
+                  borderWidth: 1,
+                  borderColor: "black",
+                  borderRadius: 50,
+                  paddingVertical: 5,
+                  paddingHorizontal: 16,
+                  fontWeight: "bold",
+                  color: "black",
+                  height: 30,
+                  width: 60,
+                }}
+              >
+                {currentUser?.name}
+              </Text>
+            </View>
           )}
         </View>
 
-        <View className="mt-6 px-5">
-          <Text className="font-bold text-2xl">Welcome, <Text className="font-bold text-slate-500">{currentUser?.name}</Text></Text>
-          <Text className="font-semibold text-xl text-gray-500">
-            Our Fashions App
+        {/* <View style={{ marginTop: 5, paddingHorizontal: 20 }}>
+          <Text style={{ fontWeight: "bold", fontSize: 30, color: "black" }}>
+            Welcome,{" "}
+            <Text style={{ fontWeight: "bold", color: "#FFC107" }}>
+              {currentUser?.name || "Guest"}
+            </Text>
           </Text>
+          <Text style={{ fontWeight: "600", fontSize: 18, color: "black" }}>
+            Our Lucky Fashions App
+          </Text>
+        </View> */}
+        <View style={{ marginTop: 15, paddingHorizontal: 15 }}>
+          <SearchHandler
+            navigation={navigation}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
         </View>
 
-        <View className="mt-6 px-5">
-          <View className="flex-row bg-gray-200 p-2 px-3 items-center rounded-3xl">
-            <View className="">
-              <MaterialIcons name="search" size={24} color={"#111"} />
-            </View>
-            <TextInput
-              placeholder="Search..."
-              placeholderTextColor={"#666666"}
-              className="px-2"
-            />
-          </View>
-        </View>
-
-        <View className="mt-6 p-5">
-          <OfferCard />
-        </View>
-        <View className="mt-4">
-          <View className="flex-row justify-between items-center px-5">
-            <Text className="text-lg font-extrabold">New Arrivals</Text>
-            <Pressable onPress={() => navigation.navigate("productlistscreen")}>
-              <Text className="text-xs text-gray-500">View All</Text>
-            </Pressable>
-          </View>
-          <ScrollView
-            className="mt-4 ml-5"
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
+        <View style={{ marginTop: 10, paddingHorizontal: 5 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
           >
-            {products?.map(product=>
-            <Pressable key={product.id} 
-            onPress={() => navigation.navigate("detailscreen",
-            {productId:product.id})}>
-              <NewArrivalsCard title={product.title} image={product.image} price={product.price} brand={product.brand} />
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: "800",
+                paddingHorizontal: 10,
+                color: "black",
+                marginBottom: 4,
+              }}
+            >
+              New Arrivals
+            </Text>
+
+            <Pressable onPress={() => navigation.navigate("productlistscreen")}>
+              <Text style={{ fontSize: 14, color: "#757575" }}>View All</Text>
             </Pressable>
-              )}
-            
+          </View>
+          <View
+            style={{
+              height: 3,
+              backgroundColor: "black",
+              marginLeft: 10,
+              borderRadius: 1,
+              width: 120,
+            }}
+          />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {products?.map((product) => (
+              <Pressable key={product.id}>
+                <NewArrivalsCard
+                  title={product.name}
+                  image={product.images[0]}
+                  price={product.price}
+                  onPress={() => {
+                    navigation.navigate("ProductDetailScreen", {
+                      product: product,
+                    });
+                  }}
+                />
+              </Pressable>
+            ))}
           </ScrollView>
         </View>
+
+        <View style={{ paddingHorizontal: 15 }}>
+          <Text
+            style={{
+              fontSize: 17,
+              fontWeight: "800",
+              color: "black",
+              marginBottom: 4,
+            }}
+          >
+            Categories
+          </Text>
+          <View
+            style={{
+              height: 3,
+              backgroundColor: "black",
+              borderRadius: 1,
+              width: 120,
+            }}
+          />
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <View style={{ flexDirection: "row" }}>
+              <CategoryCard
+                title="Stylish Kurtis"
+                image="https://2.bp.blogspot.com/-86LQWvBQaDY/WaAR6wp1pFI/AAAAAAAAAOA/ryxea8RIboAVKqQqM5rV4HFTrOx-C8AygCLcBGAs/s1600/A%2Bline%2Bkurti.jpg"
+                price={299}
+                title1="Legis"
+                onPress={() => navigation.navigate("KurtisCategory")}
+              />
+              <CategoryCard
+                title="Fashionable Tops"
+                price={119}
+                image="https://th.bing.com/th/id/OIP.nCoLlj-ECH4LGreqsjHizgHaJo?rs=1&pid=ImgDetMain"
+                onPress={() => navigation.navigate("TopsCategory")}
+              />
+              <CategoryCard
+                title="Tees & Combos"
+                price={109}
+                image="https://i.pinimg.com/originals/5a/ae/3c/5aae3c251abcafa2d7ea2a6ef3d28f7e.jpg"
+                onPress={() => navigation.navigate("CombosCategory")}
+              />
+            </View>
+            <View style={{ flexDirection: "row" }}>
+              <CategoryCard
+                title="Kurti Sets"
+                price={450}
+                image="https://assets0.mirraw.com/images/8911086/image_zoom.jpeg?1619075604"
+                onPress={() => navigation.navigate("KurtiSetsCategory")}
+              />
+              <CategoryCard
+                title="Legis"
+                price={199}
+                image="https://n2.sdlcdn.com/imgs/a/u/j/Legis-Multicolour-Viscose-leggings-Pack-SDL116795715-1-65e27.jpg"
+                onPress={() => navigation.navigate("LegisCategory")}
+              />
+              <CategoryCard
+                title="Jeans"
+                price={599}
+                image="https://i.pinimg.com/originals/b5/24/06/b52406bf35c9354245e5177d9b8a4b2b.jpg"
+                onPress={() => navigation.navigate("JeansCategory")}
+              />
+            </View>
+          </View>
+        </View>
+
         <AuthenticationModal
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
