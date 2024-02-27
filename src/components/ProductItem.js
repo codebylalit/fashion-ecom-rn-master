@@ -2,8 +2,9 @@ import React, { useState, useContext } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import CartContext from "../features/cartContext";
+import { Button } from "react-native";
 
-const ProductItem = ({ id, title, description, images, price }) => {
+const ProductItem = ({ id, title, description, images, price, isSold }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("Medium"); // Default size
   const { addToCart } = useContext(CartContext);
@@ -28,6 +29,7 @@ const ProductItem = ({ id, title, description, images, price }) => {
       product: { id, title, description, images, price },
     });
   };
+
 
   return (
     <TouchableOpacity onPress={handleProductDetail} style={styles.container}>

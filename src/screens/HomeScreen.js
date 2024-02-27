@@ -20,6 +20,8 @@ import "react-native-tailwindcss";
 import { StyleSheet } from "react-native";
 import CategoryCard from "../Categories/CategoryCard";
 import SearchHandler from "../components/SearchHandler";
+import { Modal, Button} from "react-native";
+import { color } from "react-native-tailwindcss";
 
 const Home = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -27,40 +29,45 @@ const Home = ({ navigation }) => {
   const { products, setProducts } = useContext(ProductContext);
   const [showAddIcon, setShowAddIcon] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+const [enteredPassword, setEnteredPassword] = useState("");
+const [correctPassword, setCorrectPassword] = useState("arvind8094#");
 
+const handleMenuPress = () => {
+  setShowAddIcon((prev) => !prev);
+};
 
-  const handleMenuPress = () => {
-    setShowAddIcon((prev) => !prev);
-  };
+const fetchAllProducts = async () => {
+  const result = await getProducts();
+  setProducts(result);
+};
 
-  const fetchAllProducts = async () => {
-    const result = await getProducts();
-    setProducts(result);
-  };
+useEffect(() => {
+  navigation.setOptions({
+    headerShown: false,
+  });
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
+  fetchAllProducts();
+}, []);
 
-    fetchAllProducts();
-  }, []);
+const handleAddProduct = () => {
+  setPasswordModalVisible(true);
+};
 
-   const handleAddProduct = (product) => {
-     // Extract the necessary data from the product object
-     const { id, name, price, description, images } = product;
+const handlePasswordSubmit = () => {
+  if (enteredPassword === correctPassword) {
+    navigateToAddProductScreen();
+  } else {
+    // Handle incorrect password
+    console.log("Incorrect password");
+  }
+};
 
-     // Navigate to the addproductscreen and pass only the necessary data
-     navigation.navigate("addproductscreen", {
-       productId: id,
-       productName: name,
-       productPrice: price,
-       productDescription: description,
-       productImages: images,
-     });
-   };
-
-
+const navigateToAddProductScreen = () => {
+  // Navigate to the addproductscreen
+  navigation.navigate("addproductscreen");
+  setPasswordModalVisible(false);
+};
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#e6e6fa" }}>
       <ScrollView>
@@ -153,18 +160,6 @@ const Home = ({ navigation }) => {
             </View>
           )}
         </View>
-
-        {/* <View style={{ marginTop: 5, paddingHorizontal: 20 }}>
-          <Text style={{ fontWeight: "bold", fontSize: 30, color: "black" }}>
-            Welcome,{" "}
-            <Text style={{ fontWeight: "bold", color: "#FFC107" }}>
-              {currentUser?.name || "Guest"}
-            </Text>
-          </Text>
-          <Text style={{ fontWeight: "600", fontSize: 18, color: "black" }}>
-            Our Lucky Fashions App
-          </Text>
-        </View> */}
         <View style={{ marginTop: 15, paddingHorizontal: 15 }}>
           <SearchHandler
             navigation={navigation}
@@ -300,9 +295,67 @@ const Home = ({ navigation }) => {
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
         />
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={passwordModalVisible}
+          onRequestClose={() => {
+            setPasswordModalVisible(!passwordModalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Enter Password</Text>
+              <TextInput
+                style={styles.input}
+                secureTextEntry={true}
+                placeholder="Password"
+                onChangeText={(text) => setEnteredPassword(text)}
+              />
+              <Button title="Submit" color={"green"} onPress={handlePasswordSubmit} />
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  modalView: {
+    margin: 10,
+    backgroundColor: "whitesmoke",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  input: {
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    width: "100%",
+  },
+});
 
 export default Home;
