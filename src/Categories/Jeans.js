@@ -55,14 +55,14 @@ const Jeans = ({ navigation }) => {
       </Text>
       <FlatList
         data={products}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => index.toString()} // Use index as the key if item.id is not unique
         renderItem={({ item }) => (
           <ProductCard
-            title={item.name} // Corrected property name
-            images={item.images} // Corrected property name
+            title={item.name}
+            images={item.images}
             description={item.description}
             price={item.price}
-            onPress={() => handleProductPress(item.id)}
+            onPress={() => handleProductPress(item)}
           />
         )}
       />

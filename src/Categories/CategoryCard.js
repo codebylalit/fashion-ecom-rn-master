@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 
-const CategoryCard = ({ title,title1, image, price, onPress }) => {
+const CategoryCard = ({ title, image, price, onPress }) => {
   const rotationAngle = Math.floor(Math.random() * 9) - 5;
   return (
     <Pressable onPress={onPress} style={styles.container}>

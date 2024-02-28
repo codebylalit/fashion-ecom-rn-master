@@ -57,7 +57,7 @@ const TotalSummaryCard = () => {
       orderDetails = items
         .map(
           (item) =>
-            `${item.name} - Qty: ${item.quantity} Size: ${item.size} Description: ${item.description} Price: ${item.price} `
+            ` Name: ${item.name} - Qty: ${item.quantity} Size: ${item.size} Description: ${item.description} Price: ${item.price} `
         )
         .join("\n");
     } else {
@@ -68,9 +68,11 @@ const TotalSummaryCard = () => {
     }
     return orderDetails;
   };
+  console.log("productdetails",generateOrderDetails)
 
   const openWhatsApp = async (deliveryType) => {
     const message = generateOrderDetails(cartItems, deliveryType);
+    console.log(message)
     const phoneNumber = "+91 8094466693";
     Linking.openURL(`whatsapp://send?phone=${phoneNumber}&text=${message}`);
   };

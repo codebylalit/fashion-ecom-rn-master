@@ -8,13 +8,11 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
-    },
-    "production": {
       "android": {
-        "image": "ubuntu-20.04-jdk-8-ndk-r19c"
+        "buildType": "apk"  
       }
-    }
+    },
+    "production": {}
   },
   "submit": {
     "production": {}

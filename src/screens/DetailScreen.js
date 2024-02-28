@@ -35,6 +35,7 @@ const ProductDetailScreen = ({ route }) => {
     };
 
     addToCart(productWithDetails);
+    console.log("prod details",productWithDetails)
   };
 
   return (

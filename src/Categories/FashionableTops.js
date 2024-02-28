@@ -13,7 +13,7 @@ const FashionableTops = ({ navigation }) => {
 
   const fetchProducts = async () => {
     try {
-      console.log("Fetching Jeans products...");
+      console.log("Fetching tops products...");
       const querySnapshot = await getDocs(collection(db, "products"));
       const productsData = [];
       querySnapshot.forEach((doc) => {
@@ -22,11 +22,11 @@ const FashionableTops = ({ navigation }) => {
           productsData.push(product);
         }
       });
-      console.log("Jeans products:", productsData);
+      console.log("tops products:", productsData);
       setProducts(productsData);
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching Jeans products:", error);
+      console.error("Error fetching tops products:", error);
       setLoading(false);
     }
   };
@@ -61,14 +61,14 @@ const FashionableTops = ({ navigation }) => {
       </Text>
       <FlatList
         data={products}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => index.toString()} // Use index as the key if item.id is not unique
         renderItem={({ item }) => (
           <ProductCard
-            title={item.name} // Corrected property name
-            images={item.images} // Corrected property name
+            title={item.name}
+            images={item.images}
             description={item.description}
             price={item.price}
-            onPress={() => handleProductPress(item.id)}
+            onPress={() => handleProductPress(item)}
           />
         )}
       />

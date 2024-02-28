@@ -4,12 +4,14 @@ import React, { useContext } from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import CartContext from "../features/cartContext";
+import { times } from "lodash";
 
-const CartItem = ({ name, images, price, quantity, id, size, description }) => {
+const CartItem = ({ name, title, images, price, quantity, id, size, description }) => {
   const { removeItem } = useContext(CartContext); // Accessing removeItem from CartContext
 
   const handleRemoveItem = () => {
     removeItem(id); // Call the removeItem function with the item id
+    console.log("remove products",id)
   };
 
   return (
@@ -18,8 +20,8 @@ const CartItem = ({ name, images, price, quantity, id, size, description }) => {
         <Image source={{ uri: images[0] }} style={styles.image} />
       </View>
       <View style={styles.detailsContainer}>
-        <Text style={styles.title} numberOfLines={1}>
-          {name}
+        <Text style={styles.title}>
+          {title || name}
         </Text>
         <Text style={styles.description}>{description}</Text>
         <Text style={styles.qty}>Size: {size}</Text>

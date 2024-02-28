@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import CartContext from "../features/cartContext";
 import { Button } from "react-native";
 
-const ProductItem = ({ id, title, description, images, price, isSold }) => {
+const ProductItem = ({ id, title, name, description, images, price, isSold }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("Medium"); // Default size
   const { addToCart } = useContext(CartContext);
@@ -14,6 +14,7 @@ const ProductItem = ({ id, title, description, images, price, isSold }) => {
     const product = {
       id,
       title,
+      name,
       description,
       images,
       price,
@@ -26,7 +27,7 @@ const ProductItem = ({ id, title, description, images, price, isSold }) => {
 
   const handleProductDetail = () => {
     navigation.navigate("ProductDetailScreen", {
-      product: { id, title, description, images, price },
+      product: { id, title, name, description, images, price },
     });
   };
 
@@ -37,7 +38,7 @@ const ProductItem = ({ id, title, description, images, price, isSold }) => {
         <Image source={{ uri: images[0] }} style={styles.image} />
         <View style={styles.content}>
           <Text style={styles.title} numberOfLines={2}>
-            {title}
+            {title || name}
           </Text>
           <Text style={styles.description} numberOfLines={2}>
             {description}
